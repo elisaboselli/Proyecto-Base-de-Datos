@@ -1,0 +1,134 @@
+﻿CREATE SCHEMA CiudadDeLosNinios;
+SET search_path = CiudadDeLosNinios;
+
+DROP TABLE IF EXISTS Persona CASCADE;
+CREATE TABLE Persona(
+DNI VARCHAR(15) NOT NULL,
+nombre VARCHAR(20) NOT NULL,
+apellido VARCHAR(30) NOT NULL,
+direccion VARCHAR(40) NOT NULL,
+codigoPostal VARCHAR(10) NOT NULL,
+email VARCHAR(40),
+facebook VARCHAR(50),
+telefonoFijo VARCHAR(15),
+telefonoCelular VARCHAR(20) NOT NULL,
+fechaNacimiento DATE NOT NULL,
+CONSTRAINT pkDni PRIMARY KEY (DNI)
+);
+
+DROP DOMAIN IF EXISTS ESTADO CASCADE;
+CREATE DOMAIN ESTADO AS VARCHAR(20)
+CHECK(VALUE IN('Error','En Gestion','Adherido','Amigo','No Acepta','Baja','Voluntario')) NOT NULL;
+
+DROP TABLE IF EXISTS Contacto CASCADE;
+CREATE TABLE Contacto(
+DNI VARCHAR(15) NOT NULL PRIMARY KEY,
+fechaPrimerContacto DATE,
+fechaAlta DATE,
+fechaBaja DATE,
+fechaRechazoAdhesion DATE,
+estado ESTADO,
+refdni VARCHAR(15) NOT NULL,
+refRelacion VARCHAR(20),
+refComentario VARCHAR(40),
+CONSTRAINT fkdniPad FOREIGN KEY (DNI) REFERENCES Persona ON DELETE CASCADE,
+CONSTRAINT fkrefDni FOREIGN KEY (refDni) REFERENCES Persona ON DELETE SET NULL
+);
+
+DROP TABLE IF EXISTS Donante CASCADE;
+CREATE TABLE Donante(
+DNI VARCHAR(15) NOT NULL PRIMARY KEY,
+ocupacion VARCHAR(50),
+CUIL_CUIT VARCHAR(20),
+CONSTRAINT fkdnipad FOREIGN KEY (DNI) REFERENCES Contacto ON DELETE CASCADE
+);
+
+
+DROP TABLE IF EXISTS Programa CASCADE;
+CREATE TABLE Programa(
+codigoPrograma SERIAL,
+nombrePrograma VARCHAR(50) NOT NULL,
+descripcion TEXT NOT NULL,
+CONSTRAINT pkcodigo PRIMARY KEY (codigoPrograma)
+);
+
+DROP TABLE IF EXISTS MedioDePago CASCADE;
+CREATE TABLE MedioDePago(
+identificador SERIAL,
+nombreTitular VARCHAR(20),
+apellidoTitular VARCHAR(20),
+CONSTRAINT pkid PRIMARY KEY (identificador)
+);
+
+DROP TABLE IF EXISTS Tarjeta CASCADE;
+CREATE TABLE Tarjeta(
+nombre VARCHAR(15) NOT NULL UNIQUE,
+CONSTRAINT pknombreTarj PRIMARY KEY (nombre)
+);
+
+DROP TABLE IF EXISTS TarjetaDeCredito CASCADE;
+CREATE TABLE TarjetaDeCredito(
+id INT NOT NULL UNIQUE,
+nroTarjeta VARCHAR(20) NOT NULL UNIQUE,
+CVV VARCHAR(3) NOT NULL,
+fechaVencimiento DATE NOT NULL,
+nombreTarjeta VARCHAR(20) NOT NULL,
+CONSTRAINT fkid FOREIGN KEY (id) REFERENCES MedioDePago ON DELETE CASCADE,
+CONSTRAINT fkNT FOREIGN KEY (nombreTarjeta) REFERENCES Tarjeta ON DELETE CASCADE
+);
+
+DROP DOMAIN IF EXISTS CUENTA CASCADE;
+CREATE DOMAIN CUENTA AS VARCHAR(20)
+CHECK(VALUE IN ('Cuenta Corriente','Caja de Ahorros')) NOT NULL;
+
+DROP TABLE IF EXISTS TarjetaDeDebitoOTransferencia CASCADE;
+CREATE TABLE TarjetaDeDebitoOTransferencia(
+id INTEGER NOT NULL UNIQUE,
+CBU VARCHAR(30) NOT NULL UNIQUE,
+nroCuenta VARCHAR(20) NOT NULL,
+tipoCuenta CUENTA,
+sucursalBanco VARCHAR(30) NOT NULL,
+nombreBanco VARCHAR(30) NOT NULL,
+CONSTRAINT fkid FOREIGN KEY (id) REFERENCES MedioDePago ON DELETE CASCADE
+);
+
+DROP DOMAIN IF EXISTS FRECUENCIA CASCADE;
+CREATE DOMAIN FRECUENCIA  AS VARCHAR(20)
+CHECK (VALUE IN ('Mensual','Semestral')) NOT NULL;
+
+DROP TABLE IF EXISTS Donacion CASCADE;
+CREATE TABLE Donacion(
+DNI VARCHAR(30) NOT NULL,
+codigoPrograma INTEGER NOT NULL,
+frecuencia FRECUENCIA NOT NULL,
+monto NUMERIC(10,2) NOT NULL,
+identificador INTEGER,
+CONSTRAINT pkdninom PRIMARY KEY (DNI,codigoPrograma),
+CONSTRAINT fkdni FOREIGN KEY (dni) REFERENCES Donante ON DELETE CASCADE,
+CONSTRAINT fkcod FOREIGN KEY (codigoPrograma) REFERENCES Programa ON DELETE CASCADE,
+CONSTRAINT fkid FOREIGN KEY (identificador) REFERENCES MedioDePago ON DELETE NO ACTION
+);
+
+DROP TABLE IF EXISTS auditoria CASCADE;
+CREATE TABLE auditoria (
+fecha_elim TIMESTAMP NOT NULL,
+usario text NOT NULL,
+DNI VARCHAR(15) NOT NULL,
+ocupacion VARCHAR(50) NOT NULL,
+CUIL_CUIT VARCHAR(20) NOT NULL
+);
+
+CREATE FUNCTION funcion_auditoria () RETURNS TRIGGER AS $funcion_auditoria$
+	DECLARE
+	BEGIN 
+		INSERT INTO auditoria VALUES (now(),user,old.*);
+		UPDATE Contacto SET fechaBaja = now(),estado='Baja' WHERE Contacto.DNI=old.dni;
+		RETURN NULL; 
+	END;
+$funcion_auditoria$ LANGUAGE 'plpgsql';
+
+
+--crear el trigger para generar información de auditoria
+CREATE TRIGGER trigger_auditoria AFTER DELETE ON Donante FOR EACH ROW 
+EXECUTE PROCEDURE funcion_auditoria();
+
