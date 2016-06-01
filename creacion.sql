@@ -121,8 +121,8 @@ CUIL_CUIT VARCHAR(20) NOT NULL
 CREATE FUNCTION funcion_auditoria () RETURNS TRIGGER AS $funcion_auditoria$
 	DECLARE
 	BEGIN 
-		INSERT INTO auditoria VALUES (now(),user,old.*);
-		UPDATE Contacto SET fechaBaja = now(),estado='Baja' WHERE Contacto.DNI=old.dni;
+		INSERT INTO ciudaddelosninios.auditoria VALUES (now(),user,old.*);
+		UPDATE Contacto SET fechaBaja = now(),estado='Baja' WHERE ciudaddelosninios.Contacto.DNI=old.dni;
 		RETURN NULL; 
 	END;
 $funcion_auditoria$ LANGUAGE 'plpgsql';
