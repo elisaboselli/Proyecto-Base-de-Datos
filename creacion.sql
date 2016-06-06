@@ -122,7 +122,7 @@ CREATE FUNCTION funcion_auditoria () RETURNS TRIGGER AS $funcion_auditoria$
 	DECLARE
 	BEGIN 
 		INSERT INTO ciudaddelosninios.auditoria VALUES (now(),user,old.*);
-		UPDATE Contacto SET fechaBaja = now(),estado='Baja' WHERE ciudaddelosninios.Contacto.DNI=old.dni;
+		UPDATE ciudaddelosninios.Contacto SET fechaBaja = now(),estado='Baja' WHERE ciudaddelosninios.Contacto.DNI=old.dni;
 		RETURN NULL; 
 	END;
 $funcion_auditoria$ LANGUAGE 'plpgsql';

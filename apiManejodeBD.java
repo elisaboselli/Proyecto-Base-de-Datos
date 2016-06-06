@@ -54,86 +54,88 @@ public class apiManejodeBD{
 		}
 	}
 	
-	//Funcion para pedir datos.
-	//Aun no esta usada ni probada.
-	public void Peticion(String peticion, String destino){
-		System.out.print(peticion);
-		destino=in.next();
-		controlNull(destino);
-	}
 
 	//Inserta una persona en la base de datos (Tabla: Persona).
 	public void insertarPersona() throws ParseException{
 		try {
-			//FALTA CONTROL DE SI NO ESTABA.
 			//Solicita los datos de la nueva persona.
 			String dni;
-			String nombre;
-			String apellido;
-			String direccion;
-			String codpos;
-			String email;
-			String face;
-			String telfijo;
-			String telcel;
-			String fnac;
-			
 			System.out.print("Ingrese dni: ");
 			dni = in.next();
 			controlNull(dni);
 
-			System.out.print("Ingrese nombre: ");
-			nombre = in.next();
-			controlNull(nombre);
-
-			System.out.print("Ingrese apellido: ");
-			apellido = in.next();
-			controlNull(apellido);
-
-			System.out.print("Ingrese direccion: ");
-			direccion = in.next();
-			controlNull(direccion);
-
-			System.out.print("Ingrese codigo postal: ");
-			codpos = in.next();
-			controlNull(codpos);
-
-			System.out.print("Ingrese email: ");
-			email = in.next();
-			controlNull(email);
-
-			System.out.print("Ingrese facebook: ");
-			face = in.next();
-			controlNull(face);
-
-			System.out.print("Ingrese telefono fijo: ");
-			telfijo = in.next();
-			controlNull(telfijo);
-
-			System.out.print("Ingrese telefono celular: ");
-			telcel = in.next();
-			controlNull(telcel);
-
-			System.out.print("Ingrese fecha nacimiento: ");
-			fnac = in.next();
-			controlNull(fnac);
-			Date parsed = format.parse(fnac);
-			java.sql.Date fnacdate = new java.sql.Date(parsed.getTime());
-			
-			//Y la carga en la base de datos.
-			PreparedStatement st = Conexion.prepareStatement("INSERT INTO CiudadDeLosNinios.Persona VALUES(?,?,?,?,?,?,?,?,?,?)");
+			PreparedStatement st = Conexion.prepareStatement("SELECT dni FROM CiudadDeLosNinios.Persona WHERE Persona.dni= ?");
 			st.setString(1, dni);
-			st.setString(2, nombre);
-			st.setString(3, apellido);
-			st.setString(4, direccion);
-			st.setString(5, codpos);
-			st.setString(6, email);
-			st.setString(7, face);
-			st.setString(8, telfijo);
-			st.setString(9, telcel);
-			st.setDate(10, fnacdate);
+			ResultSet rs = st.executeQuery();
 
-			st.executeUpdate();
+			if (!(rs.next())){
+		
+				String nombre;
+				String apellido;
+				String direccion;
+				String codpos;
+				String email;
+				String face;
+				String telfijo;
+				String telcel;
+				String fnac;
+
+				System.out.print("Ingrese nombre: ");
+				nombre = in.next();
+				controlNull(nombre);
+
+				System.out.print("Ingrese apellido: ");
+				apellido = in.next();
+				controlNull(apellido);
+
+				System.out.print("Ingrese direccion: ");
+				direccion = in.next();
+				controlNull(direccion);
+
+				System.out.print("Ingrese codigo postal: ");
+				codpos = in.next();
+				controlNull(codpos);
+
+				System.out.print("Ingrese email: ");
+				email = in.next();
+				controlNull(email);
+
+				System.out.print("Ingrese facebook: ");
+				face = in.next();
+				controlNull(face);
+
+				System.out.print("Ingrese telefono fijo: ");
+				telfijo = in.next();
+				controlNull(telfijo);
+
+				System.out.print("Ingrese telefono celular: ");
+				telcel = in.next();
+				controlNull(telcel);
+
+				System.out.print("Ingrese fecha nacimiento: ");
+				fnac = in.next();
+				controlNull(fnac);
+				Date parsed = format.parse(fnac);
+				java.sql.Date fnacdate = new java.sql.Date(parsed.getTime());
+				
+				//Y la carga en la base de datos.
+				PreparedStatement st2 = Conexion.prepareStatement("INSERT INTO CiudadDeLosNinios.Persona VALUES(?,?,?,?,?,?,?,?,?,?)");
+				st2.setString(1, dni);
+				st2.setString(2, nombre);
+				st2.setString(3, apellido);
+				st2.setString(4, direccion);
+				st2.setString(5, codpos);
+				st2.setString(6, email);
+				st2.setString(7, face);
+				st2.setString(8, telfijo);
+				st2.setString(9, telcel);
+				st2.setDate(10, fnacdate);
+
+				st2.executeUpdate();
+			}
+			else{
+				System.out.println("Ya existe una persona con ese DNI");
+			}
 		}
 		catch (SQLException ex){
 		ex.printStackTrace();
@@ -141,7 +143,6 @@ public class apiManejodeBD{
 	}
 
 	//Inserta un nuevo padrino a la base de datos (Tabla Contacto).
-	//PARA MI LO TENDRIA QUE INSERTAR EN DONANTE.
 	public void insertarContacto() throws ParseException{
 		try {
 			//Solicita DNI del nuevo contacto.
@@ -243,43 +244,33 @@ public class apiManejodeBD{
 			st.executeUpdate();
 		}
 		catch(SQLException ex){
-		ex.printStackTrace();	
+			ex.printStackTrace();	
 		}
 	}
 
 	//Muestra todos los padrinos, con los respectivos programas a los que aporta, junto con el monto y fecuencia del aporte.
 	public void listarPadrinos(){
-
-	}
-	
-	/*
-	public void insertarDonante(){
-		String DNI;
-		String ocupacion;
-		String CUIL_CUIT;
-		try{	
-			System.out.println("Ingrese el DNI del donante: ");
-			DNI = in.next();
-			controlNull(DNI);
-			System.out.println("Ingrese la ocupacion del donante: ");
-			ocupacion = in.next();
-			controlNull(ocupacion);
-			System.out.println("Ingrese el CUIL/CUIT del donante: ");
-			CUIL_CUIT= in.next();
-			controlNull(CUIL_CUIT);
-
-			String query = "INSERT INTO CiudadDeLosNinios.Persona VALUES("
-			+"\""+ DNI +"\","
-			+"\""+ ocupacion +"\","
-			+"\""+ CUIL_CUIT +"\")";
-			Statement st = Conexion.createStatement();
-			st.executeUpdate(query);
+		try{
+			String query = "SELECT don.dni, p.nombre, p.apellido, pr.nombrePrograma, don.frecuencia, don.monto FROM ((ciudaddelosninios.persona p NATURAL JOIN ciudaddelosninios.donacion don) NATURAL JOIN ciudaddelosninios.programa pr);";
+			PreparedStatement st = Conexion.prepareStatement(query);
+			ResultSet rs = st.executeQuery();
+			System.out.println("\n");
+			System.out.println("Padrinos junto a los programas a los que aportan con su correspondiente frecuencia y monto");
+			System.out.println("\n");
+			while(rs.next()){
+				System.out.print("DNI: " + rs.getString(1)+", ");
+				System.out.print("Nombre: " + rs.getString(2)+", ");
+				System.out.print("Apellido: " + rs.getString(3)+", ");
+				System.out.print("Programa: " + rs.getString(4)+", ");
+				System.out.print("Frecuencia: " + rs.getString(5)+", ");
+				System.out.print("Monto: " + rs.getString(6));
+				System.out.println("\n");
+			}
 		}
-		catch (SQLException ex){
-		}
+    	catch(SQLException sqle) {
+    		sqle.printStackTrace();
+      		System.err.println("Error connecting: " + sqle);
+    	}
 	}
-	*/
 
-	
-	
 }

@@ -50,4 +50,6 @@ INSERT INTO Donacion (DNI,codigoPrograma,frecuencia,monto,identificador) VALUES
 ('27963163',1,'Mensual',200,1),
 ('29948186',1,'Semestral',1000,2),
 ('34654210',2,'Semestral',500,3),
-('20915239',3,'Mensual',300,4);
+('20915239',3,'Mensual',300,4),
+('34654210',1,'Mensual',50.0),
+('29948186',3,'Mensual',50.0);
